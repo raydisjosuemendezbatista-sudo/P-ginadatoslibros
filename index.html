@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mis Libros – Precios</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f4f1ea;--card:#ffffff;--tx:#1d2a27;--mu:#6c7773;--ac:#1c5c4d;--ac2:#144438;--gold:#b8892f;--bd:#e6e1d6;--soft:#f4f1ea;--sh:0 1px 2px rgba(20,40,35,.06),0 6px 18px rgba(20,40,35,.07);--hd1:#1c5c4d;--hd2:#0f3a30}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121715;--card:#1b2220;--tx:#ece9e1;--mu:#9aa6a2;--ac:#3fb596;--ac2:#2f9a7e;--gold:#e0b45c;--bd:#2c3835;--soft:#151b19;--sh:0 1px 2px rgba(0,0,0,.4);--hd1:#17463b;--hd2:#0d2b24}}
+:root[data-theme="dark"]{--bg:#121715;--card:#1b2220;--tx:#ece9e1;--mu:#9aa6a2;--ac:#3fb596;--ac2:#2f9a7e;--gold:#e0b45c;--bd:#2c3835;--soft:#151b19;--sh:0 1px 2px rgba(0,0,0,.4);--hd1:#17463b;--hd2:#0d2b24}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;padding:0 14px 28px;max-width:640px;margin-inline:auto}
+.hero{background:linear-gradient(135deg,var(--hd1),var(--hd2));color:#fff;margin:0 -14px 16px;padding:22px 18px 20px;border-radius:0 0 22px 22px;box-shadow:var(--sh)}
+.hero h1{font:700 1.55rem/1.15 Fraunces,Georgia,serif;margin:0;letter-spacing:.2px}
+.hero p{margin:4px 0 0;opacity:.8;font-size:.85rem}
+.hero .chip{display:inline-block;margin-top:12px;background:rgba(255,255,255,.14);border-radius:999px;padding:4px 12px;font-size:.78rem}
+h2{font:600 1.05rem Fraunces,Georgia,serif;margin:0 0 4px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:var(--sh)}
+label{display:block;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--mu);margin:12px 0 5px}
+input{width:100%;padding:12px;border:1.5px solid var(--bd);border-radius:11px;background:var(--soft);color:var(--tx);font:inherit;font-size:1rem;outline:none;transition:border-color .15s,box-shadow .15s}
+input:focus{border-color:var(--ac);box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 18%,transparent)}
+input[type=file]{padding:9px;font-size:.88rem}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+button{background:var(--ac);color:#fff;border:0;border-radius:11px;padding:13px 18px;font:inherit;font-weight:600;cursor:pointer}
+button:active{background:var(--ac2)}
+button.g{background:transparent;color:var(--mu);border:1.5px solid var(--bd)}
+.rate{display:flex;align-items:center;gap:12px}.rate input{font-weight:600;font-size:1.15rem}
+.rate .ic{font-size:1.6rem}
+.res{background:var(--soft);border:1px dashed var(--bd);border-radius:12px;padding:12px;margin-top:14px;font-size:.9rem}
+.res div{display:flex;justify-content:space-between;padding:3px 0;color:var(--mu)}
+.res div span:last-child{color:var(--tx);font-weight:500}
+.res .big{border-top:1px solid var(--bd);margin-top:6px;padding-top:9px;color:var(--tx)}
+.big{font:700 1.3rem Fraunces,Georgia,serif;color:var(--gold)}
+.res .big span:last-child{color:var(--gold);font-weight:700}
+.book{display:flex;gap:14px;align-items:stretch}
+.book img,.ph{width:92px;height:128px;object-fit:cover;border-radius:8px 12px 12px 8px;border:1px solid var(--bd);flex:none;background:var(--soft);box-shadow:3px 4px 10px rgba(0,0,0,.18);border-left:4px solid var(--ac)}
+.ph{display:flex;align-items:center;justify-content:center;color:var(--mu);font-size:2rem}
+.bt{flex:1;min-width:0;display:flex;flex-direction:column}
+.bt b{font:600 1.02rem/1.25 Fraunces,Georgia,serif;margin-bottom:4px}
+.sm{font-size:.82rem;color:var(--mu)}
+.bt .big{margin-top:auto;padding-top:6px}
+.acts{display:flex;gap:8px;margin-top:8px}.acts button{padding:6px 12px;font-size:.8rem;border-radius:9px}
+.sec{font:600 .78rem Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--mu);margin:20px 4px 10px}
+#prev{max-width:110px;border-radius:8px;margin-top:8px;display:none;box-shadow:var(--sh)}
+#save{flex:1}
+#est{font-size:.78rem}
+#buscar{background:var(--card);border-radius:999px;padding:12px 16px;box-shadow:var(--sh);margin-bottom:14px}
+</style></head><body>
+<div class="hero"><h1>📚 Mis Libros</h1><p>Costos, precios y ganancia en pesos dominicanos</p><span class="chip" id="est"></span></div>
+<div id="login" class="card" style="display:none">
+  <h2>🔐 Entrar</h2>
+  <label>Correo</label><input id="em" type="email" autocomplete="email">
+  <label>Contraseña (mínimo 6)</label><input id="pw" type="password" autocomplete="current-password">
+  <div class="acts" style="margin-top:14px"><button id="bin" style="flex:1">Entrar</button><button class="g" id="bnew" style="flex:1">Crear cuenta</button></div>
+  <div class="sm" style="margin-top:10px">Crea tu cuenta una sola vez; luego entras con la misma desde cualquier aparato.</div>
+</div>
+<div id="app">
+
+<div class="card">
+  <h2>💵 Tasa del dólar</h2>
+  <label style="margin-top:6px">RD$ por cada US$1</label>
+  <input id="tasa" type="number" inputmode="decimal" step="0.01">
+  <div class="sm" style="margin-top:6px">Al cambiarla, todos los precios guardados se recalculan.</div>
+</div>
+
+<div class="card">
+  <h2 id="ft">Nuevo libro</h2>
+  <label>Título (ej. Biblia Reina Valera)</label>
+  <input id="titulo" type="text">
+  <label>Portada (foto)</label>
+  <input id="foto" type="file" accept="image/*">
+  <img id="prev" alt="">
+  <div class="row">
+    <div><label>Peso (libras)</label><input id="peso" type="number" inputmode="decimal" step="0.01"></div>
+    <div><label>Costo por libra (US$)</label><input id="cpl" type="number" inputmode="decimal" step="0.01"></div>
+  </div>
+  <div class="row">
+    <div><label>Precio del libro (US$)</label><input id="pl" type="number" inputmode="decimal" step="0.01"></div>
+    <div><label>% de ganancia</label><input id="gan" type="number" inputmode="decimal" step="0.1"></div>
+  </div>
+  <div class="res" id="calc"></div>
+  <div class="acts"><button id="save">Guardar libro</button><button class="g" id="cancel" style="display:none">Cancelar</button></div>
+</div>
+
+<div class="sec" id="cnt">Mi catálogo</div>
+<input id="buscar" type="search" placeholder="🔍 Buscar libro por título" style="margin-bottom:12px">
+<div id="list"></div>
+<div class="sm" id="empty">Aún no has guardado libros.</div>
+
+<div class="acts" id="outw" style="display:none;justify-content:center;margin-top:18px"><button class="g" id="bout">Cerrar sesión</button></div>
+</div>
+<script>
+let books=[],tasa=60,foto="",editId=null,col=null,q="",tt;
+const $=id=>document.getElementById(id);
+const rd=n=>"RD$ "+n.toLocaleString("es-DO",{minimumFractionDigits:2,maximumFractionDigits:2});
+const us=n=>"US$ "+n.toFixed(2);
+const num=v=>parseFloat(v)||0;
+function lsGet(){try{return JSON.parse(localStorage.getItem("libros")||"[]")}catch(e){return[]}}
+function lsSet(){try{localStorage.setItem("libros",JSON.stringify(books));localStorage.setItem("tasa",String(tasa))}catch(e){}}
+async function saveBook(b){if(col){try{await col.doc("libro_"+b.id).set(b)}catch(e){alert("No se pudo guardar en la nube: "+(e.message||e.code))}}else{const i=books.findIndex(x=>x.id===b.id);i>=0?books[i]=b:books.unshift(b);lsSet();render()}}
+async function delBook(id){if(col){try{await col.doc("libro_"+id).delete()}catch(e){alert("No se pudo borrar.")}}else{books=books.filter(b=>b.id!==id);lsSet();render()}}
+function saveTasa(){clearTimeout(tt);tt=setTimeout(()=>{if(col){col.doc("tasa").set({v:tasa}).catch(()=>{})}else lsSet()},500)}
+function calc(b,t){const envio=b.peso*b.cpl,costoUS=envio+b.pl,costoRD=costoUS*t,gananciaRD=costoRD*b.gan/100;return{envio,costoUS,costoRD,gananciaRD,venta:costoRD+gananciaRD}}
+function cur(){return{peso:num($("peso").value),cpl:num($("cpl").value),pl:num($("pl").value),gan:num($("gan").value)}}
+function showCalc(){const b=cur(),c=calc(b,tasa);
+$("calc").innerHTML=`<div><span>Envío (${b.peso} lb × ${us(b.cpl)})</span><span>${us(c.envio)}</span></div>
+<div><span>Costo total</span><span>${us(c.costoUS)}</span></div>
+<div><span>Costo en pesos</span><span>${rd(c.costoRD)}</span></div>
+<div><span>Ganancia (${b.gan}%)</span><span>${rd(c.gananciaRD)}</span></div>
+<div class="big"><span>Precio de venta</span><span>${rd(c.venta)}</span></div>`}
+function render(){const L=$("list");L.innerHTML="";
+const f=books.filter(b=>b.titulo.toLowerCase().includes(q));
+$("cnt").textContent="Mi catálogo · "+books.length+(books.length===1?" libro":" libros");$("empty").style.display=f.length?"none":"block";$("empty").textContent=books.length?"Ningún libro coincide.":"Aún no has guardado libros.";
+f.forEach(b=>{const c=calc(b,tasa),d=document.createElement("div");d.className="card book";
+const img=b.foto?`<img src="${b.foto}" alt="">`:`<div class="ph">📖</div>`;
+d.innerHTML=img+`<div class="bt"><b></b><div class="sm">${b.peso} lb · ${us(b.cpl)}/lb · libro ${us(b.pl)}</div>
+<div class="sm">Costo: ${rd(c.costoRD)} · Ganancia ${b.gan}%</div><div class="big">${rd(c.venta)}</div>
+<div class="acts"><button class="g" data-e="${b.id}">Editar</button><button class="g" data-d="${b.id}">Borrar</button></div></div>`;
+d.querySelector("b").textContent=b.titulo;L.appendChild(d)})}
+function reset(){editId=null;foto="";["titulo","peso","cpl","pl","gan"].forEach(i=>$(i).value="");$("foto").value="";$("prev").style.display="none";$("ft").textContent="Nuevo libro";$("cancel").style.display="none";showCalc()}
+$("foto").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,320/Math.max(im.width,im.height)),cv=document.createElement("canvas");cv.width=im.width*s;cv.height=im.height*s;cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);foto=cv.toDataURL("image/jpeg",.7);$("prev").src=foto;$("prev").style.display="block"};im.src=r.result};r.readAsDataURL(f)};
+["peso","cpl","pl","gan"].forEach(i=>$(i).oninput=showCalc);
+$("buscar").oninput=e=>{q=e.target.value.trim().toLowerCase();render()};
+$("tasa").oninput=()=>{tasa=num($("tasa").value);saveTasa();showCalc();render()};
+$("save").onclick=async()=>{const t=$("titulo").value.trim();if(!t){alert("Escribe el título del libro.");return}
+const b={...cur(),titulo:t,foto,id:editId||String(Date.now())};
+await saveBook(b);reset()};
+$("cancel").onclick=reset;
+$("list").onclick=e=>{const d=e.target.dataset.d,ed=e.target.dataset.e;
+if(d&&confirm("¿Borrar este libro?"))delBook(d);
+if(ed){const b=books.find(x=>x.id===ed);editId=ed;foto=b.foto;$("titulo").value=b.titulo;$("peso").value=b.peso;$("cpl").value=b.cpl;$("pl").value=b.pl;$("gan").value=b.gan;
+if(foto){$("prev").src=foto;$("prev").style.display="block"}$("ft").textContent="Editando libro";$("cancel").style.display="inline-block";showCalc();window.scrollTo({top:0,behavior:"smooth"})}};
+
+// ====== PEGA AQUÍ LOS DATOS DE TU PROYECTO DE FIREBASE ======
+const FIREBASE_CONFIG={apiKey:"PEGA_AQUI",authDomain:"",projectId:"",storageBucket:"",messagingSenderId:"",appId:""};
+// ============================================================
+let unsub=null;
+function start(db,uid){
+col=db.collection("users").doc(uid).collection("libros");let first=true;
+if(unsub)unsub();
+unsub=col.onSnapshot(snap=>{
+const nb=[];let nt=null;
+snap.docs.forEach(d=>{const x=d.data();if(!x)return;if(d.id==="tasa")nt=x.v;else if(d.id.startsWith("libro_"))nb.push(x)});
+if(first){first=false;const old=lsGet();
+if(!nb.length&&old.length){old.forEach(b=>col.doc("libro_"+b.id).set(b).catch(()=>{}));$("est").textContent="☁️ Subiendo tus libros a la nube…";books=old;render();return}}
+books=nb.sort((a,b)=>Number(b.id)-Number(a.id));
+if(nt!==null){tasa=nt;if(document.activeElement!==$("tasa"))$("tasa").value=tasa}
+$("est").textContent="☁️ Guardado en la nube";showCalc();render()},
+e=>{$("est").textContent="⚠️ Error de nube: "+(e.code||"");col=null})}
+async function init(){
+books=lsGet();try{const t=localStorage.getItem("tasa");if(t)tasa=parseFloat(t)}catch(e){}
+$("tasa").value=tasa;showCalc();render();
+if(typeof firebase==="undefined"||!FIREBASE_CONFIG.apiKey||FIREBASE_CONFIG.apiKey==="PEGA_AQUI"){$("est").textContent="⚠️ Guardado solo en este teléfono (falta configurar Firebase)";return}
+firebase.initializeApp(FIREBASE_CONFIG);
+const auth=firebase.auth(),db=firebase.firestore();
+const go=f=>{const em=$("em").value.trim(),pw=$("pw").value;if(!em||pw.length<6){alert("Escribe tu correo y una contraseña de 6 o más caracteres.");return}f.call(auth,em,pw).catch(e=>alert("No se pudo: "+e.message))};
+$("bin").onclick=()=>go(auth.signInWithEmailAndPassword);
+$("bnew").onclick=()=>go(auth.createUserWithEmailAndPassword);
+$("bout").onclick=()=>auth.signOut();
+auth.onAuthStateChanged(u=>{
+if(!u){col=null;if(unsub){unsub();unsub=null}$("login").style.display="block";$("app").style.display="none";$("est").textContent="Inicia sesión para ver tus libros";return}
+$("login").style.display="none";$("app").style.display="block";$("outw").style.display="flex";start(db,u.uid)})}
+init();
+</script></body></html>
