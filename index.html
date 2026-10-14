@@ -76,7 +76,7 @@ button.g{background:transparent;color:var(--mu);border:1.5px solid var(--bd)}
   <img id="prev" alt="">
   <div class="row">
     <div><label>Peso (libras)</label><input id="peso" type="number" inputmode="decimal" step="0.01"></div>
-    <div><label>Costo por libra (US$)</label><input id="cpl" type="number" inputmode="decimal" step="0.01"></div>
+    <div><label>Costo por libra (RD$)</label><input id="cpl" type="number" inputmode="decimal" step="0.01"></div>
   </div>
   <div class="row">
     <div><label>Precio del libro (US$)</label><input id="pl" type="number" inputmode="decimal" step="0.01"></div>
@@ -104,12 +104,12 @@ function lsSet(){try{localStorage.setItem("libros",JSON.stringify(books));localS
 async function saveBook(b){if(col){try{await col.doc("libro_"+b.id).set(b)}catch(e){alert("No se pudo guardar en la nube: "+(e.message||e.code))}}else{const i=books.findIndex(x=>x.id===b.id);i>=0?books[i]=b:books.unshift(b);lsSet();render()}}
 async function delBook(id){if(col){try{await col.doc("libro_"+id).delete()}catch(e){alert("No se pudo borrar.")}}else{books=books.filter(b=>b.id!==id);lsSet();render()}}
 function saveTasa(){clearTimeout(tt);tt=setTimeout(()=>{if(col){col.doc("tasa").set({v:tasa}).catch(()=>{})}else lsSet()},500)}
-function calc(b,t){const envio=b.peso*b.cpl,costoUS=envio+b.pl,costoRD=costoUS*t,gananciaRD=costoRD*b.gan/100;return{envio,costoUS,costoRD,gananciaRD,venta:costoRD+gananciaRD}}
+function calc(b,t){const envio=b.peso*b.cpl,libroRD=b.pl*t,costoRD=envio+libroRD,gananciaRD=costoRD*b.gan/100;return{envio,libroRD,costoRD,gananciaRD,venta:costoRD+gananciaRD}}
 function cur(){return{peso:num($("peso").value),cpl:num($("cpl").value),pl:num($("pl").value),gan:num($("gan").value)}}
 function showCalc(){const b=cur(),c=calc(b,tasa);
-$("calc").innerHTML=`<div><span>Envío (${b.peso} lb × ${us(b.cpl)})</span><span>${us(c.envio)}</span></div>
-<div><span>Costo total</span><span>${us(c.costoUS)}</span></div>
-<div><span>Costo en pesos</span><span>${rd(c.costoRD)}</span></div>
+$("calc").innerHTML=`<div><span>Envío (${b.peso} lb × ${rd(b.cpl)})</span><span>${rd(c.envio)}</span></div>
+<div><span>Libro (${us(b.pl)} × ${tasa})</span><span>${rd(c.libroRD)}</span></div>
+<div><span>Costo total</span><span>${rd(c.costoRD)}</span></div>
 <div><span>Ganancia (${b.gan}%)</span><span>${rd(c.gananciaRD)}</span></div>
 <div class="big"><span>Precio de venta</span><span>${rd(c.venta)}</span></div>`}
 function render(){const L=$("list");L.innerHTML="";
@@ -117,7 +117,7 @@ const f=books.filter(b=>b.titulo.toLowerCase().includes(q));
 $("cnt").textContent="Mi catálogo · "+books.length+(books.length===1?" libro":" libros");$("empty").style.display=f.length?"none":"block";$("empty").textContent=books.length?"Ningún libro coincide.":"Aún no has guardado libros.";
 f.forEach(b=>{const c=calc(b,tasa),d=document.createElement("div");d.className="card book";
 const img=b.foto?`<img src="${b.foto}" alt="">`:`<div class="ph">📖</div>`;
-d.innerHTML=img+`<div class="bt"><b></b><div class="sm">${b.peso} lb · ${us(b.cpl)}/lb · libro ${us(b.pl)}</div>
+d.innerHTML=img+`<div class="bt"><b></b><div class="sm">${b.peso} lb · ${rd(b.cpl)}/lb · libro ${us(b.pl)}</div>
 <div class="sm">Costo: ${rd(c.costoRD)} · Ganancia ${b.gan}%</div><div class="big">${rd(c.venta)}</div>
 <div class="acts"><button class="g" data-e="${b.id}">Editar</button><button class="g" data-d="${b.id}">Borrar</button></div></div>`;
 d.querySelector("b").textContent=b.titulo;L.appendChild(d)})}
